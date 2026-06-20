@@ -1,0 +1,1691 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>服装爆款趋势雷达 Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #64717d;
+      --line: #d9e2e8;
+      --bg: #f6f8fa;
+      --panel: #ffffff;
+      --soft: #eef3f5;
+      --teal: #0f8f84;
+      --blue: #2563eb;
+      --rose: #d92d55;
+      --amber: #c97912;
+      --violet: #7047c6;
+      --green: #148f48;
+      --shadow: 0 16px 36px rgba(23, 32, 38, .08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 268px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 20px 16px;
+      color: white;
+      background: #111922;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, #0f8f84 0 48%, transparent 48%),
+        linear-gradient(45deg, #c97912 0 38%, #f8fafc 38% 54%, #2563eb 54%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 17px;
+      line-height: 1.2;
+    }
+
+    .brand span {
+      color: #b9c5cf;
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 7px;
+    }
+
+    .nav button {
+      border: 0;
+      border-radius: 8px;
+      padding: 11px 12px;
+      color: #cbd5df;
+      background: transparent;
+      text-align: left;
+    }
+
+    .nav button.active,
+    .nav button:hover {
+      color: white;
+      background: #24313d;
+    }
+
+    .sidebar-note {
+      margin-top: auto;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 8px;
+      padding: 14px;
+      background: rgba(255,255,255,.06);
+    }
+
+    .sidebar-note b {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 13px;
+    }
+
+    .sidebar-note p {
+      margin: 0;
+      color: #b9c5cf;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    main {
+      min-width: 0;
+      padding: 22px;
+    }
+
+    .topbar {
+      min-height: 66px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 5px;
+      font-size: 28px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .select,
+    .ghost,
+    .primary {
+      height: 38px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--ink);
+    }
+
+    .select {
+      min-width: 132px;
+      padding: 0 12px;
+    }
+
+    .ghost,
+    .primary {
+      padding: 0 14px;
+    }
+
+    .primary {
+      color: white;
+      border-color: #0f766e;
+      background: #0f766e;
+      box-shadow: 0 10px 22px rgba(15, 118, 110, .18);
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .panel-header {
+      min-height: 58px;
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-header h2,
+    .panel-header h3 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    .panel-header span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      min-height: 94px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 14px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric strong {
+      display: block;
+      margin: 8px 0 4px;
+      font-size: 25px;
+      line-height: 1;
+    }
+
+    .metric small {
+      color: var(--green);
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      border: 1px solid var(--line);
+      background: white;
+      color: #394956;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .badge.hot {
+      color: #b91c1c;
+      border-color: #fecdd3;
+      background: #fff1f2;
+    }
+
+    .badge.good {
+      color: #0f766e;
+      border-color: #bbf7d0;
+      background: #ecfdf5;
+    }
+
+    .score-pill {
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: var(--teal);
+      border: 1px solid var(--line);
+      background: white;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .rank {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: #172026;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .overview-hero {
+      min-height: 250px;
+      overflow: hidden;
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 22px;
+      align-items: center;
+      border-radius: 8px;
+      border: 1px solid #263643;
+      padding: 24px;
+      background:
+        linear-gradient(115deg, rgba(15,143,132,.88), rgba(17,24,32,.88) 48%, rgba(23,32,38,.94)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.12) 0 1px, transparent 1px 22px);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .overview-hero h2 {
+      margin: 0 0 12px;
+      max-width: 760px;
+      font-size: 30px;
+      line-height: 1.22;
+      letter-spacing: 0;
+    }
+
+    .overview-hero p {
+      margin: 0;
+      max-width: 720px;
+      color: rgba(255,255,255,.78);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .hero-conclusion {
+      display: grid;
+      gap: 12px;
+      align-content: center;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .hero-tags .badge {
+      color: white;
+      border-color: rgba(255,255,255,.22);
+      background: rgba(255,255,255,.12);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-score {
+      justify-self: stretch;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 8px;
+      padding: 18px;
+      background: rgba(255,255,255,.1);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-score b {
+      display: block;
+      font-size: 50px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .hero-score span {
+      color: rgba(255,255,255,.78);
+      font-size: 13px;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: minmax(340px, .95fr) minmax(0, 1.05fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .radar-stage {
+      min-height: 420px;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(90deg, rgba(15,143,132,.08), transparent 45%),
+        linear-gradient(180deg, rgba(37,99,235,.08), transparent 62%),
+        white;
+    }
+
+    canvas {
+      width: min(100%, 380px);
+      aspect-ratio: 1;
+      display: block;
+    }
+
+    .trend-summary-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .trend-summary {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px;
+      background: #fbfdfe;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      text-align: left;
+    }
+
+    .trend-summary.active {
+      border-color: rgba(15,143,132,.55);
+      background: #effbf8;
+      box-shadow: 0 8px 20px rgba(15,143,132,.08);
+    }
+
+    .trend-summary strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .trend-summary small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .source-page-hero,
+    .ranking-page-hero,
+    .evidence-page-hero {
+      min-height: 170px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      padding: 20px;
+      color: white;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: end;
+      box-shadow: var(--shadow);
+    }
+
+    .source-page-hero {
+      background:
+        linear-gradient(120deg, rgba(8,111,104,.94), rgba(37,99,235,.56) 52%, rgba(23,32,38,.92)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.12) 0 1px, transparent 1px 20px);
+    }
+
+    .ranking-page-hero {
+      background:
+        radial-gradient(circle at 18% 22%, rgba(245,158,11,.95), transparent 24%),
+        linear-gradient(135deg, rgba(217,45,85,.9), rgba(23,32,38,.92) 62%);
+    }
+
+    .evidence-page-hero {
+      background:
+        linear-gradient(135deg, rgba(112,71,198,.92), rgba(15,143,132,.52) 48%, rgba(23,32,38,.92)),
+        radial-gradient(circle at 86% 20%, rgba(255,255,255,.24), transparent 22%);
+    }
+
+    .page-hero h2 {
+      margin: 0 0 10px;
+      font-size: 25px;
+      line-height: 1.25;
+    }
+
+    .page-hero p {
+      margin: 0;
+      color: rgba(255,255,255,.78);
+      line-height: 1.65;
+      font-size: 14px;
+      max-width: 760px;
+    }
+
+    .hero-mini-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 108px);
+      gap: 8px;
+    }
+
+    .hero-mini {
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 8px;
+      padding: 11px;
+      background: rgba(255,255,255,.1);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-mini b {
+      display: block;
+      font-size: 22px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .hero-mini span {
+      color: rgba(255,255,255,.78);
+      font-size: 12px;
+    }
+
+    .source-layout {
+      display: grid;
+      grid-template-columns: minmax(280px, .75fr) minmax(0, 1.25fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .source-categories {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .source-category {
+      min-height: 190px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfdfe;
+      display: grid;
+      align-content: start;
+      gap: 10px;
+    }
+
+    .source-category h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .source-category p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .source-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-top: 1px solid var(--line);
+      padding-top: 9px;
+      color: #394956;
+      font-size: 13px;
+    }
+
+    .pipeline {
+      display: grid;
+      gap: 10px;
+      counter-reset: step;
+    }
+
+    .pipeline-step {
+      position: relative;
+      min-height: 72px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 13px 13px 13px 48px;
+    }
+
+    .pipeline-step::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 13px;
+      top: 13px;
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--teal);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .pipeline-step b,
+    .source-card b {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .pipeline-step span,
+    .source-card span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .source-card-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .source-card {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px;
+      background: white;
+    }
+
+    .source-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 780px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+    }
+
+    th {
+      color: #33414c;
+      background: #f8fbfc;
+    }
+
+    td {
+      color: #52616d;
+    }
+
+    td b {
+      color: var(--ink);
+    }
+
+    .ranking-layout {
+      display: grid;
+      grid-template-columns: minmax(260px, .68fr) minmax(0, 1.32fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .platform-tabs {
+      display: grid;
+      gap: 8px;
+    }
+
+    .platform-tabs button {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 11px;
+      background: white;
+      color: #394956;
+      text-align: left;
+    }
+
+    .platform-tabs button.active {
+      color: white;
+      border-color: #172026;
+      background: #172026;
+    }
+
+    .platform-rank-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .platform-rank {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfe;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .platform-rank strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .platform-rank small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .heat-map {
+      display: grid;
+      grid-template-columns: 120px repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .heat-cell {
+      min-height: 54px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 8px;
+      background: color-mix(in srgb, var(--teal) var(--mix), white);
+      color: #24313d;
+      font-size: 12px;
+    }
+
+    .heat-head {
+      color: white;
+      border-color: #172026;
+      background: #172026;
+      font-weight: 700;
+    }
+
+    .evidence-layout {
+      display: grid;
+      grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .conclusion-picker {
+      display: grid;
+      gap: 9px;
+    }
+
+    .conclusion-picker button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 12px;
+      text-align: left;
+    }
+
+    .conclusion-picker button.active {
+      border-color: rgba(112,71,198,.45);
+      background: #f6f0ff;
+    }
+
+    .conclusion-picker strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .conclusion-picker span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .evidence-chain {
+      display: grid;
+      gap: 12px;
+    }
+
+    .chain-step {
+      position: relative;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--violet);
+      border-radius: 8px;
+      padding: 13px;
+      background: white;
+    }
+
+    .chain-step b {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .chain-step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .confidence-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .confidence-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfe;
+      padding: 12px;
+    }
+
+    .confidence-card b {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 20px;
+      color: var(--violet);
+    }
+
+    .confidence-card span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .progress {
+      height: 8px;
+      border-radius: 999px;
+      background: #e4ebef;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress i {
+      display: block;
+      height: 100%;
+      width: var(--value);
+      border-radius: inherit;
+      background: var(--color);
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      max-width: min(360px, calc(100vw - 44px));
+      border-radius: 8px;
+      padding: 13px 15px;
+      color: white;
+      background: #172026;
+      box-shadow: 0 18px 45px rgba(23,32,38,.28);
+      transform: translateY(120px);
+      opacity: 0;
+      transition: .24s ease;
+      font-size: 13px;
+      line-height: 1.5;
+      z-index: 20;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 1120px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        overflow-x: auto;
+      }
+
+      .nav {
+        display: flex;
+        min-width: max-content;
+      }
+
+      .sidebar-note {
+        display: none;
+      }
+
+      .overview-hero,
+      .source-page-hero,
+      .ranking-page-hero,
+      .evidence-page-hero,
+      .overview-grid,
+      .source-layout,
+      .ranking-layout,
+      .evidence-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-mini-metrics {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      main {
+        padding: 16px;
+      }
+
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .top-actions {
+        justify-content: stretch;
+      }
+
+      .select,
+      .ghost,
+      .primary {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .metric-grid,
+      .source-categories,
+      .confidence-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .heat-map {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 500px) {
+      h1 {
+        font-size: 24px;
+      }
+
+      .overview-hero h2 {
+        font-size: 24px;
+      }
+
+      .metric-grid,
+      .source-categories,
+      .confidence-grid,
+      .hero-mini-metrics {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <strong>趋势雷达</strong>
+          <span>Fashion Trend Radar</span>
+        </div>
+      </div>
+      <nav class="nav" aria-label="功能导航">
+        <button class="active" type="button" data-page="overview">爆款雷达</button>
+        <button type="button" data-page="sources">信息源</button>
+        <button type="button" data-page="ranking">趋势榜单</button>
+        <button type="button" data-page="evidence">证据校准</button>
+      </nav>
+      <div class="sidebar-note">
+        <b>Demo 口径</b>
+        <p>总览看结论，信息源看来源，趋势榜看平台排名，证据校准看预测证据链。</p>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">爆款雷达</h1>
+          <p class="subtitle" id="pageSubtitle">核心、简洁地表达未来 90 天最值得验证的服装爆款趋势。</p>
+        </div>
+        <div class="top-actions">
+          <select class="select" id="cycleSelect" aria-label="预测周期">
+            <option>未来 30 天</option>
+            <option selected>未来 90 天</option>
+            <option>下一季开发</option>
+          </select>
+          <button class="ghost" type="button" id="secondaryAction">切换样本</button>
+          <button class="primary" type="button" id="primaryAction">刷新总览</button>
+        </div>
+      </header>
+
+      <section class="page active" id="overviewPage">
+        <section class="overview-hero">
+          <div class="hero-conclusion">
+            <div class="badge good">未来 90 天核心判断</div>
+            <h2 id="overviewHeadline">短款机能工装夹克、可拆卸防晒衬衫、做旧水洗丹宁，是当前最值得优先验证的爆款方向。</h2>
+            <p id="overviewSummary">它们同时具备跨平台出现、社媒可传播、商品化清晰和季节/场景适配四个信号。总览页只保留结论、分数、优先动作，不展开来源细节。</p>
+            <div class="hero-tags">
+              <span class="badge">外套快反</span>
+              <span class="badge">夏季功能</span>
+              <span class="badge">街头通勤</span>
+              <span class="badge">小批量验证</span>
+            </div>
+          </div>
+          <div class="hero-score">
+            <b id="overviewScore">91</b>
+            <span>当前最高爆款潜力分</span>
+          </div>
+        </section>
+
+        <section class="metric-grid">
+          <div class="metric"><span>高潜趋势</span><strong>4</strong><small>优先进入开发池</small></div>
+          <div class="metric"><span>高潜单品</span><strong>7</strong><small>外套 / 衬衫 / 牛仔 / 包袋</small></div>
+          <div class="metric"><span>综合置信度</span><strong>86%</strong><small>证据链较完整</small></div>
+          <div class="metric"><span>风险预警</span><strong>2</strong><small>同质化 / 季节错配</small></div>
+        </section>
+
+        <section class="overview-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>爆款趋势雷达</h2>
+                <span id="radarSubtitle">短款机能工装夹克</span>
+              </div>
+            </div>
+            <div class="radar-stage">
+              <canvas id="radar" width="430" height="430" aria-label="趋势雷达图"></canvas>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>未来爆款趋势结论</h2>
+                <span>只展示总览级核心判断</span>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="trend-summary-list" id="overviewTrendList"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="sourcesPage">
+        <section class="source-page-hero page-hero">
+          <div>
+            <h2>信息来源中心</h2>
+            <p>这一页只展示趋势雷达采信的信息来源：哪些平台、什么类型、更新频率、接入方式、可信度。</p>
+          </div>
+          <div class="hero-mini-metrics">
+            <div class="hero-mini"><b>9</b><span>来源池</span></div>
+            <div class="hero-mini"><b>5</b><span>高优先级</span></div>
+            <div class="hero-mini"><b>37</b><span>待处理线索</span></div>
+          </div>
+        </section>
+
+        <section class="source-categories">
+          <article class="source-category">
+            <h3>公开资讯</h3>
+            <p>偏趋势前置信号和行业语境，英文资讯可自动摘要和翻译。</p>
+            <div class="source-line"><span>Hypebeast</span><span class="badge good">高</span></div>
+            <div class="source-line"><span>Highsnobiety</span><span class="badge good">高</span></div>
+            <div class="source-line"><span>WWD / FashionUnited</span><span class="badge">中</span></div>
+          </article>
+          <article class="source-category">
+            <h3>社媒与博主</h3>
+            <p>偏真实穿搭、评论意图、求链接、种草和传播热度。</p>
+            <div class="source-line"><span>小红书重点博主</span><span class="badge good">高</span></div>
+            <div class="source-line"><span>Instagram 街拍账号</span><span class="badge good">高</span></div>
+            <div class="source-line"><span>评论区反馈</span><span class="badge hot">强信号</span></div>
+          </article>
+          <article class="source-category">
+            <h3>行业与电商</h3>
+            <p>偏商业验证，辅助判断趋势能不能变成可卖商品。</p>
+            <div class="source-line"><span>WOW-TREND 公开内容</span><span class="badge">中</span></div>
+            <div class="source-line"><span>POP Fashion 摘要</span><span class="badge">中</span></div>
+            <div class="source-line"><span>电商热搜榜单</span><span class="badge good">高</span></div>
+          </article>
+        </section>
+
+        <section class="source-layout">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>来源处理流程</h2>
+                <span>来源页只关注数据从哪里来、如何进入趋势雷达</span>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="pipeline" id="sourcePipeline"></div>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>来源明细</h2>
+                <span>模拟真实接入状态</span>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="source-card-list" id="sourceCards"></div>
+            </div>
+          </section>
+        </section>
+      </section>
+
+      <section class="page" id="rankingPage">
+        <section class="ranking-page-hero page-hero">
+          <div>
+            <h2>核心平台榜单数据排名</h2>
+            <p>这一页聚焦“各信息来源平台上正在排上来的趋势”：看平台排名、增长、热词和对应品类，不展示来源管理和证据审核。</p>
+          </div>
+          <div class="hero-mini-metrics">
+            <div class="hero-mini"><b>6</b><span>平台榜单</span></div>
+            <div class="hero-mini"><b>24</b><span>排名条目</span></div>
+            <div class="hero-mini"><b>8</b><span>候选趋势</span></div>
+          </div>
+        </section>
+
+        <section class="ranking-layout">
+          <aside class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>榜单平台</h2>
+                <span>切换查看不同平台排名</span>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="platform-tabs" id="platformTabs"></div>
+            </div>
+          </aside>
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 id="platformTitle">小红书趋势笔记榜</h2>
+                <span id="platformSubtitle">社媒种草和评论意图排名</span>
+              </div>
+              <button class="ghost" type="button" id="shuffleRankingBtn">模拟刷新</button>
+            </div>
+            <div class="panel-body">
+              <div class="platform-rank-list" id="platformRanking"></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>跨平台综合榜</h2>
+              <span>把各平台排名合并后的趋势候选池</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="combinedRanking"></table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>品类机会热力</h2>
+              <span>榜单数据映射到商品品类</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="heat-map" id="rankingHeatMap"></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="evidencePage">
+        <section class="evidence-page-hero page-hero">
+          <div>
+            <h2>预测结论证据链</h2>
+            <p>这一页聚焦未来爆款趋势结论的依据：结论从哪些来源来、有哪些社媒反馈、有没有商业验证、风险点是什么。</p>
+          </div>
+          <div class="hero-mini-metrics">
+            <div class="hero-mini"><b>4</b><span>预测结论</span></div>
+            <div class="hero-mini"><b>16</b><span>证据节点</span></div>
+            <div class="hero-mini"><b>86%</b><span>平均置信</span></div>
+          </div>
+        </section>
+
+        <section class="evidence-layout">
+          <aside class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>预测结论</h2>
+                <span>选择后查看证据链</span>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="conclusion-picker" id="conclusionPicker"></div>
+            </div>
+          </aside>
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 id="evidenceTitle">短款机能工装夹克</h2>
+                <span id="evidenceSubtitle">爆款潜力分 91 · 证据链完整</span>
+              </div>
+              <button class="ghost" type="button" id="calibrateBtn">模拟校准</button>
+            </div>
+            <div class="panel-body">
+              <div class="evidence-chain" id="evidenceChain"></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>证据强度</h2>
+              <span>用证据完整度校准预测结论</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="confidence-grid" id="confidenceGrid"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const labels = ["热度", "增长", "商业化", "社媒传播", "新鲜度", "风险"];
+    const colors = ["#0f8f84", "#2563eb", "#148f48", "#d92d55", "#7047c6", "#c97912"];
+
+    const trends = [
+      {
+        name: "短款机能工装夹克",
+        score: 91,
+        type: "外套快反",
+        action: "优先打样",
+        summary: "街头、通勤、轻户外三个场景共振，短廓形和机能口袋有明确视觉记忆点。",
+        tags: ["短夹克", "机能口袋", "轻户外"],
+        values: [92, 87, 89, 84, 93, 68]
+      },
+      {
+        name: "可拆卸防晒衬衫",
+        score: 85,
+        type: "夏季功能",
+        action: "快反测试",
+        summary: "防晒需求进入季节高峰，可拆卸结构让基础款更有设计和溢价空间。",
+        tags: ["防晒", "可拆卸", "旅行"],
+        values: [84, 86, 95, 73, 78, 50]
+      },
+      {
+        name: "做旧水洗丹宁套装",
+        score: 88,
+        type: "牛仔系列",
+        action: "系列开发",
+        summary: "从单件牛仔扩展到夹克、半裙和套装，适合做系列化陈列。",
+        tags: ["水洗丹宁", "套装", "复古蓝"],
+        values: [88, 91, 80, 86, 90, 72]
+      },
+      {
+        name: "大容量软质托特包",
+        score: 83,
+        type: "配饰连带",
+        action: "搭配销售",
+        summary: "通勤、旅行和校园场景共用，评论区对容量和重量反馈明确。",
+        tags: ["大容量", "软塌廓形", "通勤包"],
+        values: [86, 82, 91, 79, 72, 60]
+      }
+    ];
+
+    const sources = [
+      ["HB", "Hypebeast Fashion", "公开资讯", "每日", "自动摘要", "高", "#2563eb"],
+      ["HS", "Highsnobiety Style", "公开资讯", "每日", "自动摘要", "高", "#0f8f84"],
+      ["WWD", "WWD Trends", "行业资讯", "每周", "摘要标签", "中", "#7047c6"],
+      ["WOW", "WOW-TREND 公开内容", "趋势平台", "每周", "人工导入", "中", "#d92d55"],
+      ["XHS", "小红书重点博主", "社媒", "每日", "文案评论", "高", "#db2777"],
+      ["IG", "Instagram 街拍账号", "社媒", "每日", "图文观察", "高", "#148f48"],
+      ["EC", "电商热搜榜单", "电商", "每日", "榜单接入", "高", "#0891b2"]
+    ];
+
+    const platformData = {
+      "小红书趋势笔记榜": {
+        subtitle: "社媒种草和评论意图排名",
+        rows: [
+          ["短款机能工装夹克", "求链接评论 +42%", "外套", 91],
+          ["可拆卸防晒衬衫", "防晒讨论 +37%", "衬衫", 85],
+          ["薄透叠穿针织", "穿搭收藏 +31%", "针织", 86],
+          ["大容量软质托特包", "通勤容量提问 +29%", "包袋", 83]
+        ]
+      },
+      "Instagram 街拍出现频次": {
+        subtitle: "街拍账号视觉出现频次排名",
+        rows: [
+          ["做旧水洗丹宁套装", "街拍出现 +45%", "牛仔", 88],
+          ["短款机能工装夹克", "搭配频次 +39%", "外套", 91],
+          ["复古运动拉链上衣", "运动复古 +32%", "针织/卫衣", 79],
+          ["大容量软质托特包", "大包造型 +28%", "包袋", 83]
+        ]
+      },
+      "电商热搜增长榜": {
+        subtitle: "搜索、收藏、加购模拟增长排名",
+        rows: [
+          ["可拆卸防晒衬衫", "搜索增长 +51%", "衬衫", 85],
+          ["大容量软质托特包", "加购增长 +43%", "包袋", 83],
+          ["做旧水洗丹宁套装", "收藏增长 +36%", "牛仔", 88],
+          ["低饱和粉蜡色系", "色彩搜索 +25%", "全品类", 81]
+        ]
+      },
+      "行业趋势摘要榜": {
+        subtitle: "公开趋势网站标题和摘要信号",
+        rows: [
+          ["通勤户外混搭", "趋势摘要 8 条", "通勤", 84],
+          ["做旧水洗丹宁套装", "趋势摘要 7 条", "牛仔", 88],
+          ["低饱和粉蜡色系", "色彩摘要 6 条", "全品类", 81],
+          ["短款机能工装夹克", "外套摘要 5 条", "外套", 91]
+        ]
+      }
+    };
+
+    const evidenceData = [
+      {
+        name: "短款机能工装夹克",
+        score: 91,
+        confidence: [92, 87, 84],
+        chain: [
+          ["公开资讯", "Hypebeast、Highsnobiety 中短夹克和城市户外造型高频出现。"],
+          ["社媒反馈", "小红书评论区出现求链接、上班能不能穿、有没有平替等购买意图。"],
+          ["街拍验证", "Instagram 街拍账号中短夹克 + 宽松裤装组合明显增加。"],
+          ["业务判断", "外套品类可通过口袋、抽绳、面料做差异化，适合小批量快反。"]
+        ]
+      },
+      {
+        name: "可拆卸防晒衬衫",
+        score: 85,
+        confidence: [80, 90, 95],
+        chain: [
+          ["季节信号", "未来 90 天防晒、轻薄、透气需求进入高峰。"],
+          ["社媒反馈", "用户重点询问闷不闷、是否真实防晒、能不能通勤穿。"],
+          ["电商验证", "防晒衬衫、轻薄衬衫、旅行防晒相关热搜模拟增长。"],
+          ["业务判断", "工艺和供应链可控，适合夏季快反和多价格带测试。"]
+        ]
+      },
+      {
+        name: "做旧水洗丹宁套装",
+        score: 88,
+        confidence: [88, 82, 80],
+        chain: [
+          ["公开资讯", "复古丹宁与成套穿搭在秀场和街拍中同步升温。"],
+          ["社媒反馈", "用户对复古蓝、做旧纹理和牛仔半裙组合关注提升。"],
+          ["电商验证", "水洗、复古蓝、牛仔套装等关键词适合进一步拉取真实榜单。"],
+          ["业务判断", "适合做夹克、半裙、直筒裤系列化陈列。"]
+        ]
+      },
+      {
+        name: "大容量软质托特包",
+        score: 83,
+        confidence: [82, 79, 91],
+        chain: [
+          ["街拍验证", "大包与简洁通勤造型组合增加，视觉占比明显。"],
+          ["社媒反馈", "评论区反复询问容量、重量、电脑尺寸和肩带舒适度。"],
+          ["电商验证", "大容量、轻量、通勤包等词适合做搜索和加购验证。"],
+          ["业务判断", "适合与服装搭配销售，提高整套造型连带率。"]
+        ]
+      }
+    ];
+
+    let activePage = "overview";
+    let activeTrend = 0;
+    let activePlatform = Object.keys(platformData)[0];
+    let activeEvidence = 0;
+
+    const pageCopy = {
+      overview: ["爆款雷达", "核心、简洁地表达未来 90 天最值得验证的服装爆款趋势。", "切换样本", "刷新总览"],
+      sources: ["信息源", "展示趋势雷达采信的信息来源、接入方式和来源质量。", "新增来源", "扫描来源"],
+      ranking: ["趋势榜单", "展示核心信息来源平台上的榜单数据、排名和跨平台综合榜。", "切换平台", "刷新榜单"],
+      evidence: ["证据校准", "聚焦未来爆款趋势预测结论背后的证据链和置信度。", "切换结论", "运行校准"]
+    };
+
+    function drawRadar(values) {
+      const radar = document.getElementById("radar");
+      const ctx = radar.getContext("2d");
+      const w = radar.width;
+      const h = radar.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = 145;
+      const sides = labels.length;
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 1;
+      ctx.font = "13px Microsoft YaHei, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      for (let level = 5; level >= 1; level--) {
+        const r = radius * level / 5;
+        ctx.beginPath();
+        for (let i = 0; i < sides; i++) {
+          const angle = Math.PI * 2 * i / sides - Math.PI / 2;
+          const x = cx + Math.cos(angle) * r;
+          const y = cy + Math.sin(angle) * r;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = level === 5 ? "#b8c5ce" : "#dfe7ec";
+        ctx.stroke();
+      }
+
+      labels.forEach((label, i) => {
+        const angle = Math.PI * 2 * i / sides - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
+        ctx.strokeStyle = "#dfe7ec";
+        ctx.stroke();
+        ctx.fillStyle = "#52616d";
+        ctx.fillText(label, cx + Math.cos(angle) * (radius + 35), cy + Math.sin(angle) * (radius + 30));
+      });
+
+      ctx.beginPath();
+      values.forEach((value, i) => {
+        const angle = Math.PI * 2 * i / sides - Math.PI / 2;
+        const r = radius * value / 100;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      ctx.fillStyle = "rgba(15,143,132,.22)";
+      ctx.fill();
+      ctx.strokeStyle = "#0f8f84";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      values.forEach((value, i) => {
+        const angle = Math.PI * 2 * i / sides - Math.PI / 2;
+        const r = radius * value / 100;
+        ctx.beginPath();
+        ctx.arc(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r, 5, 0, Math.PI * 2);
+        ctx.fillStyle = colors[i];
+        ctx.fill();
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+    }
+
+    function renderOverview() {
+      const trend = trends[activeTrend];
+      document.getElementById("overviewScore").textContent = trend.score;
+      document.getElementById("radarSubtitle").textContent = trend.name;
+      document.getElementById("overviewHeadline").textContent = `${trends[0].name}、${trends[1].name}、${trends[2].name}，是当前最值得优先验证的爆款方向。`;
+      document.getElementById("overviewSummary").textContent = `${trend.name} 当前评分 ${trend.score}，建议动作是“${trend.action}”。总览页只保留结论、分数、优先动作，不展开来源细节。`;
+      document.getElementById("overviewTrendList").innerHTML = trends.map((item, index) => `
+        <button class="trend-summary ${index === activeTrend ? "active" : ""}" type="button" data-trend="${index}">
+          <span class="rank">${index + 1}</span>
+          <span>
+            <strong>${item.name}</strong>
+            <small>${item.type} · ${item.summary}</small>
+          </span>
+          <span class="score-pill">${item.score}</span>
+        </button>
+      `).join("");
+      document.querySelectorAll("[data-trend]").forEach(button => {
+        button.addEventListener("click", () => {
+          activeTrend = Number(button.dataset.trend);
+          renderOverview();
+        });
+      });
+      drawRadar(trend.values);
+    }
+
+    function renderSources() {
+      document.getElementById("sourcePipeline").innerHTML = [
+        ["来源准入", "只纳入团队认可的平台、博主、榜单和可授权数据。"],
+        ["内容采集", "公开网页自动摘要，社媒和 VIP 内容可人工导入。"],
+        ["信号抽取", "抽取单品、风格、颜色、面料、评论意图和热词。"],
+        ["进入榜单", "只有可追溯来源的信号，才进入趋势榜单页面排名。"]
+      ].map(item => `<article class="pipeline-step"><b>${item[0]}</b><span>${item[1]}</span></article>`).join("");
+
+      document.getElementById("sourceCards").innerHTML = sources.map(source => `
+        <article class="source-card">
+          <div class="source-icon" style="background:${source[6]}">${source[0]}</div>
+          <div>
+            <b>${source[1]}</b>
+            <span>${source[2]} · ${source[3]} · ${source[4]}</span>
+          </div>
+          <span class="badge ${source[5] === "高" ? "good" : ""}">${source[5]}价值</span>
+        </article>
+      `).join("");
+    }
+
+    function renderRanking() {
+      const platforms = Object.keys(platformData);
+      document.getElementById("platformTabs").innerHTML = platforms.map(name => `
+        <button class="${name === activePlatform ? "active" : ""}" type="button" data-platform="${name}">${name}</button>
+      `).join("");
+      document.querySelectorAll("[data-platform]").forEach(button => {
+        button.addEventListener("click", () => {
+          activePlatform = button.dataset.platform;
+          renderRanking();
+        });
+      });
+
+      const platform = platformData[activePlatform];
+      document.getElementById("platformTitle").textContent = activePlatform;
+      document.getElementById("platformSubtitle").textContent = platform.subtitle;
+      document.getElementById("platformRanking").innerHTML = platform.rows.map((row, index) => `
+        <article class="platform-rank">
+          <span class="rank">${index + 1}</span>
+          <span>
+            <strong>${row[0]}</strong>
+            <small>${row[1]} · ${row[2]}</small>
+          </span>
+          <span class="score-pill">${row[3]}</span>
+        </article>
+      `).join("");
+
+      const combined = [
+        ["短款机能工装夹克", "小红书 #1 / Instagram #2 / 行业摘要 #4", "外套", 91, "优先打样"],
+        ["做旧水洗丹宁套装", "Instagram #1 / 行业摘要 #2 / 电商 #3", "牛仔", 88, "系列开发"],
+        ["可拆卸防晒衬衫", "电商 #1 / 小红书 #2", "衬衫", 85, "夏季快反"],
+        ["大容量软质托特包", "电商 #2 / 小红书 #4 / Instagram #4", "包袋", 83, "搭配连带"],
+        ["低饱和粉蜡色系", "电商 #4 / 行业摘要 #3", "全品类", 81, "色彩主题"],
+        ["复古运动拉链上衣", "Instagram #3", "针织/卫衣", 79, "继续观察"]
+      ];
+      document.getElementById("combinedRanking").innerHTML = `
+        <thead><tr><th>排名</th><th>趋势</th><th>平台排名来源</th><th>品类</th><th>综合分</th><th>动作</th></tr></thead>
+        <tbody>${combined.map((row, index) => `
+          <tr>
+            <td><span class="rank">${index + 1}</span></td>
+            <td><b>${row[0]}</b></td>
+            <td>${row[1]}</td>
+            <td>${row[2]}</td>
+            <td><b>${row[3]}</b></td>
+            <td><span class="badge ${index < 3 ? "hot" : ""}">${row[4]}</span></td>
+          </tr>
+        `).join("")}</tbody>
+      `;
+
+      document.getElementById("rankingHeatMap").innerHTML = [
+        ["", "外套", "衬衫", "牛仔", "包袋"],
+        ["社媒", 91, 85, 82, 83],
+        ["街拍", 89, 70, 92, 86],
+        ["电商", 78, 94, 84, 90],
+        ["行业", 86, 76, 88, 72]
+      ].map((row, rowIndex) => row.map((cell, colIndex) => {
+        const isHead = rowIndex === 0 || colIndex === 0;
+        const mix = typeof cell === "number" ? `${cell}%` : "0%";
+        return `<div class="heat-cell ${isHead ? "heat-head" : ""}" style="--mix:${mix}">${cell}</div>`;
+      }).join("")).join("");
+    }
+
+    function renderEvidence() {
+      const current = evidenceData[activeEvidence];
+      document.getElementById("conclusionPicker").innerHTML = evidenceData.map((item, index) => `
+        <button class="${index === activeEvidence ? "active" : ""}" type="button" data-evidence="${index}">
+          <strong>${item.name}</strong>
+          <span>爆款潜力分 ${item.score}</span>
+        </button>
+      `).join("");
+      document.querySelectorAll("[data-evidence]").forEach(button => {
+        button.addEventListener("click", () => {
+          activeEvidence = Number(button.dataset.evidence);
+          renderEvidence();
+        });
+      });
+
+      document.getElementById("evidenceTitle").textContent = current.name;
+      document.getElementById("evidenceSubtitle").textContent = `爆款潜力分 ${current.score} · 证据链完整`;
+      document.getElementById("evidenceChain").innerHTML = current.chain.map(item => `
+        <article class="chain-step">
+          <b>${item[0]}</b>
+          <p>${item[1]}</p>
+        </article>
+      `).join("");
+
+      const names = ["来源一致性", "用户意图", "商业落地"];
+      document.getElementById("confidenceGrid").innerHTML = current.confidence.map((value, index) => `
+        <article class="confidence-card">
+          <b>${value}%</b>
+          <span>${names[index]}</span>
+          <div class="progress"><i style="--value:${value}%;--color:${colors[index]}"></i></div>
+        </article>
+      `).join("");
+    }
+
+    function setPage(page) {
+      activePage = page;
+      document.querySelectorAll(".page").forEach(section => section.classList.remove("active"));
+      document.getElementById(`${page}Page`).classList.add("active");
+      document.querySelectorAll(".nav button").forEach(button => button.classList.toggle("active", button.dataset.page === page));
+      document.getElementById("pageTitle").textContent = pageCopy[page][0];
+      document.getElementById("pageSubtitle").textContent = pageCopy[page][1];
+      document.getElementById("secondaryAction").textContent = pageCopy[page][2];
+      document.getElementById("primaryAction").textContent = pageCopy[page][3];
+    }
+
+    function toast(message) {
+      const el = document.getElementById("toast");
+      el.textContent = message;
+      el.classList.add("show");
+      window.clearTimeout(window.toastTimer);
+      window.toastTimer = window.setTimeout(() => el.classList.remove("show"), 2400);
+    }
+
+    document.querySelectorAll(".nav button").forEach(button => {
+      button.addEventListener("click", () => setPage(button.dataset.page));
+    });
+
+    document.getElementById("secondaryAction").addEventListener("click", () => {
+      if (activePage === "overview") {
+        activeTrend = (activeTrend + 1) % trends.length;
+        renderOverview();
+        toast("已切换总览核心趋势。");
+      }
+      if (activePage === "sources") {
+        toast("已模拟新增一个信息来源候选。");
+      }
+      if (activePage === "ranking") {
+        const keys = Object.keys(platformData);
+        activePlatform = keys[(keys.indexOf(activePlatform) + 1) % keys.length];
+        renderRanking();
+        toast("已切换榜单平台。");
+      }
+      if (activePage === "evidence") {
+        activeEvidence = (activeEvidence + 1) % evidenceData.length;
+        renderEvidence();
+        toast("已切换预测结论。");
+      }
+    });
+
+    document.getElementById("primaryAction").addEventListener("click", () => {
+      if (activePage === "overview") {
+        renderOverview();
+        toast("总览核心趋势已刷新。");
+      }
+      if (activePage === "sources") {
+        renderSources();
+        toast("信息来源扫描完成。");
+      }
+      if (activePage === "ranking") {
+        renderRanking();
+        toast("榜单排名已刷新。");
+      }
+      if (activePage === "evidence") {
+        renderEvidence();
+        toast("证据链校准已运行。");
+      }
+    });
+
+    document.getElementById("shuffleRankingBtn").addEventListener("click", () => {
+      const keys = Object.keys(platformData);
+      activePlatform = keys[Math.floor(Math.random() * keys.length)];
+      renderRanking();
+      toast("已模拟刷新平台榜单。");
+    });
+
+    document.getElementById("calibrateBtn").addEventListener("click", () => {
+      renderEvidence();
+      toast("已模拟校准当前预测结论。");
+    });
+
+    renderOverview();
+    renderSources();
+    renderRanking();
+    renderEvidence();
+  </script>
+</body>
+</html>
